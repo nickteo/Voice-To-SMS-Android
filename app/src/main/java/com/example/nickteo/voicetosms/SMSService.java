@@ -14,18 +14,10 @@ import android.widget.Toast;
 import com.getpebble.android.kit.PebbleKit;
 import com.getpebble.android.kit.util.PebbleDictionary;
 
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.UUID;
-
 /**
  * Created by Nick Teo on 12/23/2015.
  */
 public class SMSService extends Service {
-
-    private static final int KEY_PHONE_NUMBER = 0;
-    private static final int KEY_MESSAGE = 1;
-    private static final UUID APP_UUID = UUID.fromString("5f8e15dd-acad-4d8b-9f01-1869ef95b57e");
 
     private String phoneNumber;
 
@@ -72,14 +64,6 @@ public class SMSService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        new Timer().scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                // Let it continue running until it is stopped.
-                Log.i("tag", "phoneNumber: " + phoneNumber);
-            }
-        }, 0, 1000);
-
         // Register to receive messages.
         // We are registering an observer (mMessageReceiver) to receive Intents
         // with actions named "custom-event-name".
@@ -88,14 +72,14 @@ public class SMSService extends Service {
 
         // Set up data receiver handler
         if(mDataReceiver == null) {
-            mDataReceiver = new PebbleKit.PebbleDataReceiver(APP_UUID) {
+            mDataReceiver = new PebbleKit.PebbleDataReceiver(Globals.APP_UUID) {
 
                 @Override
                 public void receiveData(Context context, int transactionId, PebbleDictionary dict) {
                     // Message received, over!
                     PebbleKit.sendAckToPebble(context, transactionId);
                     // Grab the transcription
-                    String transcription = dict.getString(KEY_MESSAGE);
+                    String transcription = dict.getString(Globals.KEY_MESSAGE);
                     Log.i("something", "received message");
                     if (transcription != null) {
                         Log.i("receiveData", "Transcription: " + transcription);

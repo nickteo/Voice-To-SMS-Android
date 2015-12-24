@@ -16,4 +16,11 @@
         android:layout_height="wrap_content"
         android:text="@string/button_save"
         android:onClick="saveNumber" />
+
+
+
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent"
+        android:id="@+id/list"/>
 </LinearLayout>
