@@ -16,6 +16,16 @@
         android:layout_height="wrap_content"
         android:text="@string/button_save"
         android:onClick="saveNumber" />
+    <EditText
+        android:layout_width="match_parent"
+        android:id="@+id/contact_name"
+        android:layout_height="wrap_content"
+        android:hint="@string/contact_name" />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/button_lookup"
+        android:onClick="getContacts" />
 
 
 

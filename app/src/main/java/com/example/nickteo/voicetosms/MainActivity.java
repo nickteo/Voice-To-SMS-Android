@@ -1,24 +1,69 @@
 package com.example.nickteo.voicetosms;
 
+import android.annotation.SuppressLint;
+import android.content.ContentResolver;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBarActivity;
-import android.telephony.SmsManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
 public class MainActivity extends ActionBarActivity {
+
+    ListView lv;
+
+    // Defines the text expression
+    @SuppressLint("InlinedApi")
+    private static final String SELECTION = ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " LIKE ?";
+
+
+    @SuppressLint("InlinedApi")
+    private static final String[] PROJECTION =
+            {
+                    ContactsContract.Contacts._ID,
+                    ContactsContract.Contacts.LOOKUP_KEY,
+                    ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+                    ContactsContract.CommonDataKinds.Phone.NUMBER,
+
+            };
+
+    /*
+     * Defines an array that contains column names to move from
+     * the Cursor to the ListView.
+     */
+    @SuppressLint("InlinedApi")
+    private final static String[] FROM_COLUMNS = {
+            ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+            ContactsContract.CommonDataKinds.Phone.NUMBER,
+
+    };
+
+    /*
+     * Defines an array that contains resource ids for the layout views
+     * that get the Cursor column contents. The id is pre-defined in
+     * the Android framework, so it is prefaced with "android.R.id"
+     */
+    private final static int[] TO_IDS = {
+            android.R.id.text1,
+            android.R.id.text2,
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         startService(new Intent(getBaseContext(), SMSService.class));
+        lv = (ListView) findViewById(R.id.list);
     }
 
     @Override
@@ -41,6 +86,33 @@ public class MainActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void getContacts(View view) {
+        EditText contactNameET = (EditText) findViewById(R.id.contact_name);
+        String contactName = contactNameET.getText().toString();
+        getContacts(getContentResolver(), contactName);
+    }
+
+    public void getContacts(ContentResolver cr, String contactName) {
+
+        String[] mSelectionArgs = { '%' + contactName + '%' };
+
+        Uri CONTENT_URI = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
+        String DISPLAY_NAME = ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME;
+
+        Cursor cursor = cr.query(CONTENT_URI, PROJECTION, SELECTION , mSelectionArgs, DISPLAY_NAME + " ASC");
+
+        if (cursor.getCount() > 0) {
+            // Gets a CursorAdapter
+            SimpleCursorAdapter mCursorAdapter = new SimpleCursorAdapter(
+                this,
+                android.R.layout.simple_list_item_2,
+                cursor,
+                FROM_COLUMNS, TO_IDS,
+                0);
+            lv.setAdapter(mCursorAdapter);
+        }
     }
 
     /** Called when the user clicks the Save Number button */

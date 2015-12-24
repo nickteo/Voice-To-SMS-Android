@@ -3,4 +3,6 @@
     <string name="action_settings">Settings</string>
     <string name="phone_number">Enter Phone Number Here</string>
     <string name="button_save">Save Number</string>
+    <string name="contact_name">Enter Contact Name Here</string>
+    <string name="button_lookup">Lookup Contact</string>
 </resources>
