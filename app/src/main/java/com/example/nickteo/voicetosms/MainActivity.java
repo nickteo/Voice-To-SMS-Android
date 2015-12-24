@@ -23,6 +23,8 @@ public class MainActivity extends ActionBarActivity {
     private static final int KEY_MESSAGE = 1;
     private static final UUID APP_UUID = UUID.fromString("5f8e15dd-acad-4d8b-9f01-1869ef95b57e");
 
+    private String phoneNumber;
+
     private PagerAdapter mPagerAdapter;
 
     private PebbleKit.PebbleDataReceiver mDataReceiver;
@@ -31,8 +33,6 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        Log.i("onCreate", "onCreate");
     }
 
     @Override
@@ -57,23 +57,33 @@ public class MainActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    /** Called when the user clicks the Save Number button */
+    public void saveNumber(View view) {
+        EditText phoneNumberET = (EditText) findViewById(R.id.phone_number);
+        phoneNumber = phoneNumberET.getText().toString();
+        Toast.makeText(getApplicationContext(),
+                String.format("Saved phone number: %s!", phoneNumber),
+                Toast.LENGTH_LONG).show();
+    }
 
     /** Called when the user clicks the Send button */
-    public void sendMessage(View view) {
-        EditText phoneNumber = (EditText) findViewById(R.id.phone_number);
-        EditText message = (EditText) findViewById(R.id.message);
-        String phoneNumberStr = phoneNumber.getText().toString();
-        String messageStr = message.getText().toString();
-        try {
-            SmsManager smsManager = SmsManager.getDefault();
-            smsManager.sendTextMessage(phoneNumberStr, null, messageStr, null, null);
-            Toast.makeText(getApplicationContext(),
-                    "SMS sent!",
-                    Toast.LENGTH_LONG).show();
+    public void sendMessage(String phoneNumber, String message) {
+        if (phoneNumber != null && message != null){
+            try {
+                SmsManager smsManager = SmsManager.getDefault();
+                smsManager.sendTextMessage(phoneNumber, null, message, null, null);
+                Toast.makeText(getApplicationContext(),
+                        "SMS sent!",
+                        Toast.LENGTH_LONG).show();
 
-        } catch (Exception e) {
+            } catch (Exception e) {
+                Toast.makeText(getApplicationContext(),
+                        "SMS failed, please try again later!",
+                        Toast.LENGTH_LONG).show();
+            }
+        } else {
             Toast.makeText(getApplicationContext(),
-                    "SMS failed, please try again later!",
+                    "Missing either message or phone number",
                     Toast.LENGTH_LONG).show();
         }
     }
@@ -96,6 +106,7 @@ public class MainActivity extends ActionBarActivity {
                     Log.i("something", "received message");
                     if (transcription != null) {
                         Log.i("receiveData", "Transcription: " + transcription);
+                        sendMessage(phoneNumber, transcription);
                     }
                 }
 
