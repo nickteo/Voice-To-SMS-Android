@@ -1,7 +1,9 @@
 package com.example.nickteo.voicetosms;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.PagerAdapter;
 import android.support.v7.app.ActionBarActivity;
 import android.telephony.SmsManager;
@@ -33,6 +35,7 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        startService(new Intent(getBaseContext(), SMSService.class));
     }
 
     @Override
@@ -64,6 +67,7 @@ public class MainActivity extends ActionBarActivity {
         Toast.makeText(getApplicationContext(),
                 String.format("Saved phone number: %s!", phoneNumber),
                 Toast.LENGTH_LONG).show();
+        sendMessageToService("phoneNumber", phoneNumber);
     }
 
     /** Called when the user clicks the Send button */
@@ -86,6 +90,17 @@ public class MainActivity extends ActionBarActivity {
                     "Missing either message or phone number",
                     Toast.LENGTH_LONG).show();
         }
+    }
+
+    /**
+     * Use LocalBroadcastManager to send phone number to service
+     * Used antarix's example here: https://gist.github.com/Antarix/8131277
+     */
+    private void sendMessageToService(String extra,String message) {
+        Log.i("sending", "Sending message to service");
+        Intent intent = new Intent("LocalBroadcasting");
+        intent.putExtra(extra, message);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
     @Override
