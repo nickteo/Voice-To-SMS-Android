@@ -7,17 +7,29 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
+import android.telephony.SmsManager;
 import android.util.Log;
+import android.widget.Toast;
+
+import com.getpebble.android.kit.PebbleKit;
+import com.getpebble.android.kit.util.PebbleDictionary;
 
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.UUID;
 
 /**
  * Created by Nick Teo on 12/23/2015.
  */
 public class SMSService extends Service {
 
+    private static final int KEY_PHONE_NUMBER = 0;
+    private static final int KEY_MESSAGE = 1;
+    private static final UUID APP_UUID = UUID.fromString("5f8e15dd-acad-4d8b-9f01-1869ef95b57e");
+
     private String phoneNumber;
+
+    private PebbleKit.PebbleDataReceiver mDataReceiver;
 
     // Our handler for received Intents. This will be called whenever an Intent
     // with an action named "custom-event-name" is broadcasted.
@@ -36,6 +48,28 @@ public class SMSService extends Service {
         return null;
     }
 
+    /** Called when the user clicks the Send button */
+    public void sendMessage(String phoneNumber, String message) {
+        if (phoneNumber != null && message != null){
+            try {
+                SmsManager smsManager = SmsManager.getDefault();
+                smsManager.sendTextMessage(phoneNumber, null, message, null, null);
+                Toast.makeText(getApplicationContext(),
+                        "SMS sent!",
+                        Toast.LENGTH_LONG).show();
+
+            } catch (Exception e) {
+                Toast.makeText(getApplicationContext(),
+                        "SMS failed, please try again later!",
+                        Toast.LENGTH_LONG).show();
+            }
+        } else {
+            Toast.makeText(getApplicationContext(),
+                    "Missing either message or phone number",
+                    Toast.LENGTH_LONG).show();
+        }
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         new Timer().scheduleAtFixedRate(new TimerTask() {
@@ -51,6 +85,27 @@ public class SMSService extends Service {
         // with actions named "custom-event-name".
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 mMessageReceiver, new IntentFilter("LocalBroadcasting"));
+
+        // Set up data receiver handler
+        if(mDataReceiver == null) {
+            mDataReceiver = new PebbleKit.PebbleDataReceiver(APP_UUID) {
+
+                @Override
+                public void receiveData(Context context, int transactionId, PebbleDictionary dict) {
+                    // Message received, over!
+                    PebbleKit.sendAckToPebble(context, transactionId);
+                    // Grab the transcription
+                    String transcription = dict.getString(KEY_MESSAGE);
+                    Log.i("something", "received message");
+                    if (transcription != null) {
+                        Log.i("receiveData", "Transcription: " + transcription);
+                        sendMessage(phoneNumber, transcription);
+                    }
+                }
+
+            };
+            PebbleKit.registerReceivedDataHandler(getApplicationContext(), mDataReceiver);
+        }
 
         return START_STICKY;
 
