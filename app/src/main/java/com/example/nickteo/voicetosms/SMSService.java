@@ -41,17 +41,30 @@ public class SMSService extends Service {
                 String id = intent.getStringExtra("id");
                 Contact newContact = new Contact(name, number, id);
                 favorites.add(newContact);
+                // Update pebble with the new list of favorites
+                sendFavorites();
             }
             Log.d("receiver", "Got phoneNumber: " + phoneNumber);
         }
     };
+
+    private void sendFavorites() {
+        PebbleDictionary resultDict = new PebbleDictionary();
+        int numContacts = favorites.size();
+        resultDict.addInt32(Globals.KEY_NUM_CONTACTS, numContacts);
+        for (int i = 0; i < numContacts; i++) {
+            int baseKey = i * 2 + Globals.KEY_FIRST_CONTACT;
+            resultDict.addString(baseKey, favorites.get(i).getName());
+            resultDict.addString(baseKey + 1, favorites.get(i).getNumber());
+        }
+        PebbleKit.sendDataToPebble(getApplicationContext(), Globals.APP_UUID, resultDict);
+    }
 
     @Override
     public IBinder onBind(Intent arg0) {
         return null;
     }
 
-    /** Called when the user clicks the Send button */
     public void sendMessage(String phoneNumber, String message) {
         if (phoneNumber != null && message != null){
             try {
@@ -91,10 +104,11 @@ public class SMSService extends Service {
                     PebbleKit.sendAckToPebble(context, transactionId);
                     // Grab the transcription
                     String transcription = dict.getString(Globals.KEY_MESSAGE);
+                    String number = dict.getString(Globals.KEY_PHONE_NUMBER);
                     Log.i("something", "received message");
                     if (transcription != null) {
                         Log.i("receiveData", "Transcription: " + transcription);
-                        sendMessage(phoneNumber, transcription);
+                        sendMessage(number, transcription);
                     }
                 }
 
