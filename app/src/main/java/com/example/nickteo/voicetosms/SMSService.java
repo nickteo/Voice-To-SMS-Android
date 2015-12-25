@@ -14,23 +14,31 @@ import android.widget.Toast;
 import com.getpebble.android.kit.PebbleKit;
 import com.getpebble.android.kit.util.PebbleDictionary;
 
+import java.util.ArrayList;
+
 /**
  * Created by Nick Teo on 12/23/2015.
  */
 public class SMSService extends Service {
 
     private String phoneNumber;
+    private ArrayList<Contact> favorites;
 
     private PebbleKit.PebbleDataReceiver mDataReceiver;
 
     // Our handler for received Intents. This will be called whenever an Intent
-    // with an action named "custom-event-name" is broadcasted.
+    // with an action named "LocalBroadcasting" is broadcasted.
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             // TODO Auto-generated method stub
             // Get extra data included in the Intent
-            phoneNumber = intent.getStringExtra("phoneNumber");
+            if (intent.hasExtra("phoneNumber")) {
+                phoneNumber = intent.getStringExtra("phoneNumber");
+            } else if (intent.hasExtra("name") && intent.hasExtra("number") && intent.hasExtra("id")) {
+                Log.d("received", "Got Name: " + intent.getStringExtra("name") + " Got Number: " + intent.getStringExtra("number")
+                + " Got ID: " + intent.getStringExtra("id"));
+            }
             Log.d("receiver", "Got phoneNumber: " + phoneNumber);
         }
     };
@@ -90,6 +98,8 @@ public class SMSService extends Service {
             };
             PebbleKit.registerReceivedDataHandler(getApplicationContext(), mDataReceiver);
         }
+
+        favorites = new ArrayList<>();
 
         return START_STICKY;
 

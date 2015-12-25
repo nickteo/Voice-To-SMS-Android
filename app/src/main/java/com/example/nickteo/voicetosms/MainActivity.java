@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
@@ -23,17 +24,21 @@ public class MainActivity extends ActionBarActivity {
     ListView lv;
 
     // Defines the text expression
-    @SuppressLint("InlinedApi")
     private static final String SELECTION = ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " LIKE ?";
+    private static final String _ID = ContactsContract.CommonDataKinds.Phone._ID;
+    private static final String LOOKUP_KEY = ContactsContract.CommonDataKinds.Phone.LOOKUP_KEY;
+    private static final String DISPLAY_NAME = ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME;
+    private static final String NUMBER = ContactsContract.CommonDataKinds.Phone.NUMBER;
+
 
 
     @SuppressLint("InlinedApi")
     private static final String[] PROJECTION =
             {
-                    ContactsContract.Contacts._ID,
-                    ContactsContract.Contacts.LOOKUP_KEY,
-                    ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
-                    ContactsContract.CommonDataKinds.Phone.NUMBER,
+                    _ID,
+                    LOOKUP_KEY,
+                    DISPLAY_NAME,
+                    NUMBER,
 
             };
 
@@ -43,8 +48,8 @@ public class MainActivity extends ActionBarActivity {
      */
     @SuppressLint("InlinedApi")
     private final static String[] FROM_COLUMNS = {
-            ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
-            ContactsContract.CommonDataKinds.Phone.NUMBER,
+            DISPLAY_NAME,
+            NUMBER,
 
     };
 
@@ -64,6 +69,16 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
         startService(new Intent(getBaseContext(), SMSService.class));
         lv = (ListView) findViewById(R.id.list);
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long elmId) {
+                Cursor cursor = (Cursor) lv.getItemAtPosition(position);
+                String name = cursor.getString(cursor.getColumnIndex(DISPLAY_NAME));
+                String number = cursor.getString(cursor.getColumnIndex(NUMBER));
+                String id = cursor.getString(cursor.getColumnIndex(_ID));
+                sendContactToService(name, number, id);
+            }
+        });
     }
 
     @Override
@@ -99,7 +114,6 @@ public class MainActivity extends ActionBarActivity {
         String[] mSelectionArgs = { '%' + contactName + '%' };
 
         Uri CONTENT_URI = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
-        String DISPLAY_NAME = ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME;
 
         Cursor cursor = cr.query(CONTENT_URI, PROJECTION, SELECTION , mSelectionArgs, DISPLAY_NAME + " ASC");
 
@@ -123,6 +137,18 @@ public class MainActivity extends ActionBarActivity {
                 String.format("Saved phone number: %s!", phoneNumber),
                 Toast.LENGTH_LONG).show();
         sendMessageToService("phoneNumber", phoneNumber);
+    }
+
+    /**
+     * Use LocalBroadcastManager to send contacts to service
+     */
+    private void sendContactToService(String name, String number, String id) {
+        Log.i("sending", "Sending contact to service");
+        Intent intent = new Intent("LocalBroadcasting");
+        intent.putExtra("name", name);
+        intent.putExtra("number", number);
+        intent.putExtra("id", id);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
     /**
