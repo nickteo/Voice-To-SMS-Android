@@ -16,6 +16,7 @@ public class Contact {
      * @param number
      */
     public Contact(String name, String number, String id) {
+        this.numbers = new ArrayList<>();
         this.name = name;
         this.numbers.add(number);
         this.id = id;
@@ -38,5 +39,27 @@ public class Contact {
      */
     public void addNumber(String number) {
         numbers.add(number);
+    }
+
+    /**
+     * Get the name of the contact
+     */
+    public String getName() {
+        return this.name;
+    }
+
+    /**
+     * Get the number of the contact
+     * Returns the first number in the list
+     */
+    public String getNumber() {
+        return this.numbers.get(0);
+    }
+
+    /**
+     * Get the id of the contact
+     */
+    public String getId() {
+        return this.id;
     }
 }

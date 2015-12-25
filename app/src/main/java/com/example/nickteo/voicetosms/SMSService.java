@@ -36,8 +36,11 @@ public class SMSService extends Service {
             if (intent.hasExtra("phoneNumber")) {
                 phoneNumber = intent.getStringExtra("phoneNumber");
             } else if (intent.hasExtra("name") && intent.hasExtra("number") && intent.hasExtra("id")) {
-                Log.d("received", "Got Name: " + intent.getStringExtra("name") + " Got Number: " + intent.getStringExtra("number")
-                + " Got ID: " + intent.getStringExtra("id"));
+                String name = intent.getStringExtra("name");
+                String number = intent.getStringExtra("number");
+                String id = intent.getStringExtra("id");
+                Contact newContact = new Contact(name, number, id);
+                favorites.add(newContact);
             }
             Log.d("receiver", "Got phoneNumber: " + phoneNumber);
         }
