@@ -17,6 +17,8 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -99,6 +101,7 @@ public class MainActivity extends ActionBarActivity {
         EditText contactNameET = (EditText) findViewById(R.id.contact_name);
         String contactName = contactNameET.getText().toString();
         getContacts(getContentResolver(), contactName);
+        ((TextView) findViewById( R.id.header)).setText(R.string.lookup);
         // Set the item click listener to add contacts to favorites
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -108,6 +111,7 @@ public class MainActivity extends ActionBarActivity {
                 String number = cursor.getString(cursor.getColumnIndex(NUMBER));
                 String id = cursor.getString(cursor.getColumnIndex(_ID));
                 sendContactToService(name, number, id);
+                Toast.makeText(getApplicationContext(), R.string.added_to_favorites, Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -181,6 +185,7 @@ public class MainActivity extends ActionBarActivity {
      */
     public void getFavorites(View view) {
         ContactListAdapter favoritesAdapter = new ContactListAdapter(this, Globals.favorites);
+        ((TextView) findViewById( R.id.header)).setText(R.string.favorites);
         lv.setAdapter(favoritesAdapter);
 
         // Set the item click listener to add contacts to favorites
@@ -190,6 +195,7 @@ public class MainActivity extends ActionBarActivity {
                 Globals.favorites.remove(position);
                 ContactListAdapter contactListAdapter = (ContactListAdapter) parent.getAdapter();
                 contactListAdapter.notifyDataSetChanged();
+                Toast.makeText(getApplicationContext(), R.string.removed_from_favorites, Toast.LENGTH_LONG).show();
             }
         });
     }

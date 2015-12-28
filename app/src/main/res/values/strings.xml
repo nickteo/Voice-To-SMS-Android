@@ -6,4 +6,8 @@
     <string name="contact_name">Enter Contact Name Here</string>
     <string name="button_lookup">Lookup Contact</string>
     <string name="button_favorites">Show Favorites</string>
+    <string name="favorites">Favorites list. Select contact to remove from list.</string>
+    <string name="lookup">Lookup list. Select contact to add to favorites list.</string>
+    <string name="added_to_favorites">Added contact to favorites!</string>
+    <string name="removed_from_favorites">Removed contact from favorites!</string>
 </resources>

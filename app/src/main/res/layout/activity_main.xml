@@ -45,6 +45,17 @@
             android:onClick="getFavorites" />
     </LinearLayout>
 
+    <TextView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/header"
+        android:textSize="15dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxLines="2"
+        android:paddingStart="10dip"
+        android:paddingEnd="10dip"
+        android:textColor="@android:color/black"
+        />
+
     <ListView
         android:layout_width="match_parent"
         android:layout_height="fill_parent"
