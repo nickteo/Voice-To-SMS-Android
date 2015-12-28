@@ -17,7 +17,6 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
-import android.widget.Toast;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -139,14 +138,14 @@ public class MainActivity extends ActionBarActivity {
     }
 
     /** Called when the user clicks the Save Number button */
-    public void saveNumber(View view) {
+    /*public void saveNumber(View view) {
         EditText phoneNumberET = (EditText) findViewById(R.id.phone_number);
         String phoneNumber = phoneNumberET.getText().toString();
         Toast.makeText(getApplicationContext(),
                 String.format("Saved phone number: %s!", phoneNumber),
                 Toast.LENGTH_LONG).show();
         sendMessageToService("phoneNumber", phoneNumber);
-    }
+    }*/
 
     /**
      * Use LocalBroadcastManager to send contact to service
@@ -174,6 +173,25 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onResume() {
         super.onResume();
+    }
+
+    /**
+     * Click handler for showing the favorites
+     * @param view
+     */
+    public void getFavorites(View view) {
+        ContactListAdapter favoritesAdapter = new ContactListAdapter(this, Globals.favorites);
+        lv.setAdapter(favoritesAdapter);
+
+        // Set the item click listener to add contacts to favorites
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long elmId) {
+                Globals.favorites.remove(position);
+                ContactListAdapter contactListAdapter = (ContactListAdapter) parent.getAdapter();
+                contactListAdapter.notifyDataSetChanged();
+            }
+        });
     }
 
 }
