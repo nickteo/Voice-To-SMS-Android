@@ -14,17 +14,22 @@ import android.widget.Toast;
 import com.getpebble.android.kit.PebbleKit;
 import com.getpebble.android.kit.util.PebbleDictionary;
 
-import java.util.ArrayList;
-
 /**
  * Created by Nick Teo on 12/23/2015.
  */
 public class SMSService extends Service {
 
     private String phoneNumber;
-    private ArrayList<Contact> favorites;
 
     private PebbleKit.PebbleDataReceiver mDataReceiver;
+
+    /**
+     * Remove contact from favorites list
+     * @param contact
+     */
+    public void removeContact(Contact contact) {
+        Globals.favorites.remove(contact);
+    }
 
     // Our handler for received Intents. This will be called whenever an Intent
     // with an action named "LocalBroadcasting" is broadcasted.
@@ -40,7 +45,7 @@ public class SMSService extends Service {
                 String number = intent.getStringExtra("number");
                 String id = intent.getStringExtra("id");
                 Contact newContact = new Contact(name, number, id);
-                favorites.add(newContact);
+                Globals.favorites.add(newContact);
                 // Update pebble with the new list of favorites
                 sendFavorites();
             }
@@ -50,12 +55,12 @@ public class SMSService extends Service {
 
     private void sendFavorites() {
         PebbleDictionary resultDict = new PebbleDictionary();
-        int numContacts = favorites.size();
+        int numContacts = Globals.favorites.size();
         resultDict.addInt32(Globals.KEY_NUM_CONTACTS, numContacts);
         for (int i = 0; i < numContacts; i++) {
             int baseKey = i * 2 + Globals.KEY_FIRST_CONTACT;
-            resultDict.addString(baseKey, favorites.get(i).getName());
-            resultDict.addString(baseKey + 1, favorites.get(i).getNumber());
+            resultDict.addString(baseKey, Globals.favorites.get(i).getName());
+            resultDict.addString(baseKey + 1, Globals.favorites.get(i).getNumber());
         }
         PebbleKit.sendDataToPebble(getApplicationContext(), Globals.APP_UUID, resultDict);
     }
@@ -102,21 +107,25 @@ public class SMSService extends Service {
                 public void receiveData(Context context, int transactionId, PebbleDictionary dict) {
                     // Message received, over!
                     PebbleKit.sendAckToPebble(context, transactionId);
+                    Toast.makeText(getApplicationContext(),
+                            "Received message from Pebble!",
+                            Toast.LENGTH_LONG).show();
                     // Grab the transcription
                     String transcription = dict.getString(Globals.KEY_MESSAGE);
                     String number = dict.getString(Globals.KEY_PHONE_NUMBER);
                     Log.i("something", "received message");
-                    if (transcription != null) {
+
+                    if (transcription != null && number != null) {
                         Log.i("receiveData", "Transcription: " + transcription);
                         sendMessage(number, transcription);
+                    } else if (dict.getString(Globals.KEY_NEED_CONTACTS) != null) {
+                        sendFavorites();
                     }
                 }
 
             };
             PebbleKit.registerReceivedDataHandler(getApplicationContext(), mDataReceiver);
         }
-
-        favorites = new ArrayList<>();
 
         return START_STICKY;
 

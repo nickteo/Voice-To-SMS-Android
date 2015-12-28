@@ -30,8 +30,6 @@ public class MainActivity extends ActionBarActivity {
     private static final String DISPLAY_NAME = ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME;
     private static final String NUMBER = ContactsContract.CommonDataKinds.Phone.NUMBER;
 
-
-
     @SuppressLint("InlinedApi")
     private static final String[] PROJECTION =
             {
@@ -68,17 +66,8 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         startService(new Intent(getBaseContext(), SMSService.class));
+
         lv = (ListView) findViewById(R.id.list);
-        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long elmId) {
-                Cursor cursor = (Cursor) lv.getItemAtPosition(position);
-                String name = cursor.getString(cursor.getColumnIndex(DISPLAY_NAME));
-                String number = cursor.getString(cursor.getColumnIndex(NUMBER));
-                String id = cursor.getString(cursor.getColumnIndex(_ID));
-                sendContactToService(name, number, id);
-            }
-        });
     }
 
     @Override
@@ -103,12 +92,32 @@ public class MainActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * Hooked up in view on the lookup button. Retrieves contacts from store and creates list
+     * @param view
+     */
     public void getContacts(View view) {
         EditText contactNameET = (EditText) findViewById(R.id.contact_name);
         String contactName = contactNameET.getText().toString();
         getContacts(getContentResolver(), contactName);
+        // Set the item click listener to add contacts to favorites
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long elmId) {
+                Cursor cursor = (Cursor) lv.getItemAtPosition(position);
+                String name = cursor.getString(cursor.getColumnIndex(DISPLAY_NAME));
+                String number = cursor.getString(cursor.getColumnIndex(NUMBER));
+                String id = cursor.getString(cursor.getColumnIndex(_ID));
+                sendContactToService(name, number, id);
+            }
+        });
     }
 
+    /**
+     * Called by getContacts to retrieve the contacts from the phone's store
+     * @param cr
+     * @param contactName
+     */
     public void getContacts(ContentResolver cr, String contactName) {
 
         String[] mSelectionArgs = { '%' + contactName + '%' };
@@ -140,7 +149,7 @@ public class MainActivity extends ActionBarActivity {
     }
 
     /**
-     * Use LocalBroadcastManager to send contacts to service
+     * Use LocalBroadcastManager to send contact to service
      */
     private void sendContactToService(String name, String number, String id) {
         Log.i("sending", "Sending contact to service");
