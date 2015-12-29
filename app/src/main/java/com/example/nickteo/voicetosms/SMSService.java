@@ -14,6 +14,8 @@ import android.widget.Toast;
 import com.getpebble.android.kit.PebbleKit;
 import com.getpebble.android.kit.util.PebbleDictionary;
 
+import java.util.ArrayList;
+
 /**
  * Created by Nick Teo on 12/23/2015.
  */
@@ -23,13 +25,7 @@ public class SMSService extends Service {
 
     private PebbleKit.PebbleDataReceiver mDataReceiver;
 
-    /**
-     * Remove contact from favorites list
-     * @param contact
-     */
-    public void removeContact(Contact contact) {
-        Globals.favorites.remove(contact);
-    }
+    public static boolean isRunning;
 
     // Our handler for received Intents. This will be called whenever an Intent
     // with an action named "LocalBroadcasting" is broadcasted.
@@ -93,6 +89,9 @@ public class SMSService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (Globals.favorites == null) {
+            Globals.favorites = new ArrayList<>();
+        }
         // Register to receive messages.
         // We are registering an observer (mMessageReceiver) to receive Intents
         // with actions named "custom-event-name".
@@ -126,7 +125,7 @@ public class SMSService extends Service {
             };
             PebbleKit.registerReceivedDataHandler(getApplicationContext(), mDataReceiver);
         }
-
+        isRunning = true;
         return START_STICKY;
 
     }

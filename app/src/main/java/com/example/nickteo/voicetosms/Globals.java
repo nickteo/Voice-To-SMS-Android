@@ -15,5 +15,5 @@ public class Globals {
     public static final int  KEY_FIRST_CONTACT = 100;
     public static final UUID APP_UUID = UUID.fromString("5f8e15dd-acad-4d8b-9f01-1869ef95b57e");
 
-    static ArrayList<Contact> favorites = new ArrayList<>();
+    public static ArrayList<Contact> favorites;
 }
