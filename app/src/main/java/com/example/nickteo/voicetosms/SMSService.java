@@ -14,6 +14,9 @@ import android.widget.Toast;
 import com.getpebble.android.kit.PebbleKit;
 import com.getpebble.android.kit.util.PebbleDictionary;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.ArrayList;
 
 /**
@@ -37,11 +40,6 @@ public class SMSService extends Service {
             if (intent.hasExtra("phoneNumber")) {
                 phoneNumber = intent.getStringExtra("phoneNumber");
             } else if (intent.hasExtra("name") && intent.hasExtra("number") && intent.hasExtra("id")) {
-                String name = intent.getStringExtra("name");
-                String number = intent.getStringExtra("number");
-                String id = intent.getStringExtra("id");
-                Contact newContact = new Contact(name, number, id);
-                Globals.favorites.add(newContact);
                 // Update pebble with the new list of favorites
                 sendFavorites();
             }
@@ -49,6 +47,9 @@ public class SMSService extends Service {
         }
     };
 
+    /**
+     * Send the favorites to the pebble
+     */
     private void sendFavorites() {
         PebbleDictionary resultDict = new PebbleDictionary();
         int numContacts = Globals.favorites.size();
@@ -66,6 +67,11 @@ public class SMSService extends Service {
         return null;
     }
 
+    /**
+     * Send message to phoneNumber
+     * @param phoneNumber
+     * @param message
+     */
     public void sendMessage(String phoneNumber, String message) {
         if (phoneNumber != null && message != null){
             try {
@@ -87,11 +93,29 @@ public class SMSService extends Service {
         }
     }
 
+    /**
+     * Helper method to load favorites to Globals.favorites from persistent
+     * memory
+     */
+    private void loadFavoritesPersistent() {
+        Contact tempContact;
+        try {
+            FileInputStream fis = openFileInput(Globals.FILENAME);
+            ObjectInputStream ois = new ObjectInputStream(fis);
+            tempContact = (Contact) ois.readObject();
+            while (tempContact != null){
+                Globals.favorites.add(tempContact);
+                tempContact = (Contact) ois.readObject();
+            }
+        } catch (IOException ex) {
+
+        } catch (ClassNotFoundException ex) {
+
+        }
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (Globals.favorites == null) {
-            Globals.favorites = new ArrayList<>();
-        }
         // Register to receive messages.
         // We are registering an observer (mMessageReceiver) to receive Intents
         // with actions named "custom-event-name".
@@ -125,6 +149,12 @@ public class SMSService extends Service {
             };
             PebbleKit.registerReceivedDataHandler(getApplicationContext(), mDataReceiver);
         }
+
+        if (Globals.favorites == null) {
+            Globals.favorites = new ArrayList<>();
+        }
+
+        loadFavoritesPersistent();
         isRunning = true;
         return START_STICKY;
 
@@ -135,6 +165,7 @@ public class SMSService extends Service {
         // Unregister since the activity is paused.
         LocalBroadcastManager.getInstance(this).unregisterReceiver(
                 mMessageReceiver);
+
         super.onDestroy();
     }
 

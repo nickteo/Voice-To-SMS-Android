@@ -2,6 +2,7 @@ package com.example.nickteo.voicetosms;
 
 import android.annotation.SuppressLint;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -19,6 +20,10 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -71,6 +76,7 @@ public class MainActivity extends ActionBarActivity {
         }
 
         lv = (ListView) findViewById(R.id.list);
+        Contact tempContact;
     }
 
     @Override
@@ -112,10 +118,31 @@ public class MainActivity extends ActionBarActivity {
                 String name = cursor.getString(cursor.getColumnIndex(DISPLAY_NAME));
                 String number = cursor.getString(cursor.getColumnIndex(NUMBER));
                 String id = cursor.getString(cursor.getColumnIndex(_ID));
+                Contact newContact = new Contact(name, number, id);
+                Globals.favorites.add(newContact);
+                saveFavoritesPersistent();
                 sendContactToService(name, number, id);
                 Toast.makeText(getApplicationContext(), R.string.added_to_favorites, Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    /**
+     * Helper method to save favorites to persistent memory
+     */
+    private void saveFavoritesPersistent() {
+        try {
+            FileOutputStream fos = openFileOutput(Globals.FILENAME, Context.MODE_PRIVATE);
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+
+            for (Contact fav : Globals.favorites){
+                oos.writeObject(fav);
+            }
+            fos.close();
+            oos.close();
+        } catch (IOException ex) {
+
+        }
     }
 
     /**
@@ -197,6 +224,7 @@ public class MainActivity extends ActionBarActivity {
                 Globals.favorites.remove(position);
                 ContactListAdapter contactListAdapter = (ContactListAdapter) parent.getAdapter();
                 contactListAdapter.notifyDataSetChanged();
+                saveFavoritesPersistent();
                 Toast.makeText(getApplicationContext(), R.string.removed_from_favorites, Toast.LENGTH_LONG).show();
             }
         });

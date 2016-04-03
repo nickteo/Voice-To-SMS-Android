@@ -1,11 +1,12 @@
 package com.example.nickteo.voicetosms;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  * Created by Nick Teo on 12/24/2015.
  */
-public class Contact {
+public class Contact implements Serializable{
     private ArrayList<String> numbers;
     private String name;
     private String id;
