@@ -68,6 +68,16 @@ public class SMSService extends Service {
     }
 
     /**
+     * Helper method to send message status to pebble
+     * @param status
+     */
+    private void sendMessageStatus(int status) {
+        PebbleDictionary resultDict = new PebbleDictionary();
+        resultDict.addInt32(Globals.KEY_MESSAGE_STATUS, status);
+        PebbleKit.sendDataToPebble(getApplicationContext(), Globals.APP_UUID, resultDict);
+    }
+
+    /**
      * Send message to phoneNumber
      * @param phoneNumber
      * @param message
@@ -85,11 +95,13 @@ public class SMSService extends Service {
                 Toast.makeText(getApplicationContext(),
                         "SMS failed, please try again later!",
                         Toast.LENGTH_LONG).show();
+                sendMessageStatus(Globals.MESSAGE_FAILED);
             }
         } else {
             Toast.makeText(getApplicationContext(),
                     "Missing either message or phone number",
                     Toast.LENGTH_LONG).show();
+            sendMessageStatus(Globals.MESSAGE_FAILED);
         }
     }
 
@@ -130,9 +142,10 @@ public class SMSService extends Service {
                 public void receiveData(Context context, int transactionId, PebbleDictionary dict) {
                     // Message received, over!
                     PebbleKit.sendAckToPebble(context, transactionId);
+                    /* Debug code
                     Toast.makeText(getApplicationContext(),
                             "Received message from Pebble!",
-                            Toast.LENGTH_LONG).show();
+                            Toast.LENGTH_LONG).show();*/
                     // Grab the transcription
                     String transcription = dict.getString(Globals.KEY_MESSAGE);
                     String number = dict.getString(Globals.KEY_PHONE_NUMBER);
